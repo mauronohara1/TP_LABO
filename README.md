@@ -6,9 +6,10 @@ Trabajo Práctico Grupal · Laboratorio de Métodos Cuantitativos Aplicados a la
 
 | Nombre | N° de registro | Usuario de GitHub |
 |---|---|---|
-| _completar_ | | |
-| _completar_ | | |
-| _completar_ | | |
+|Sergio Sebastian Cordoba|921765|sebastiancordoba949-sys|
+|Mauro Nohara Gushiken|922170|mauronohara1|
+|Facundo Malpeli|921871|FacundoMalpeli|
+|Manuel Mariani|921739|manuelmariani6|
 
 ## Pregunta de investigación
 
