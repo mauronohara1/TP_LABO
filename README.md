@@ -23,7 +23,7 @@ https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks
 - `tracks.csv`: una fila por canción, con fecha de lanzamiento, popularidad y características de audio (danceability, energy, valence, acousticness, tempo, etc.).
 - `artists.csv`: artistas con seguidores, popularidad y géneros.
 
-**Cómo obtenerlo:** por su tamaño, el dataset no está subido al repositorio. El notebook lo descarga automáticamente desde Kaggle con la librería `kagglehub`, sin necesidad de cuenta. Como alternativa, se puede bajar el ZIP desde el link de arriba y subir `tracks.csv` a Colab.
+**Cómo obtenerlo:** por su tamaño, el dataset no está subido al repositorio. El notebook lo descarga automáticamente desde Kaggle con la librería `kagglehub`, sin necesidad de cuenta. Como alternativa, se puede bajar el ZIP desde el link de arriba y subir `tracks.csv` a Colab. Para descargarlo, hay que tener una cuenta en Kaggle.
 
 ## Contenido del repositorio
 
