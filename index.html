@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿La música se volvió más enérgica y menos alegre? · TP FCE UBA</title>
+<meta name="description" content="Informe interactivo del TP grupal de Laboratorio de Métodos Cuantitativos (FCE UBA): evolución de la energía y la valencia de las canciones de Spotify entre 1920 y 2010, Argentina frente al resto.">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+/* Aplica el tema guardado antes de pintar, para evitar parpadeos */
+(function () {
+  try {
+    var t = localStorage.getItem("tp-theme");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+</script>
+<style>
+/* Layout: columna de lectura única de 1080px, secciones separadas por filas de datos y figuras anchas.
+   Paleta: fondo azul noche, celeste (Argentina) y ámbar (resto del dataset) como únicos colores de datos. */
+:root {
+  --bg: #0b1019;
+  --surface: #121a28;
+  --surface-2: #19243a;
+  --line: #243049;
+  --fg: #e9edf5;
+  --muted: #9aa6bd;
+  --arg: #6ab7ff;
+  --res: #f2a65a;
+  --accent: #6ab7ff;
+  --accent-ink: #07111f;
+  --grid: #1f2a41;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f5f7fb; --surface: #ffffff; --surface-2: #eef2f9; --line: #dbe2ef;
+    --fg: #101828; --muted: #556176; --arg: #1d74d6; --res: #b85c08;
+    --accent: #1d74d6; --accent-ink: #ffffff; --grid: #e4e9f3; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f5f7fb; --surface: #ffffff; --surface-2: #eef2f9; --line: #dbe2ef;
+  --fg: #101828; --muted: #556176; --arg: #1d74d6; --res: #b85c08;
+  --accent: #1d74d6; --accent-ink: #ffffff; --grid: #e4e9f3; color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.15; margin: 0; letter-spacing: -0.02em; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--accent);
+}
+.muted { color: var(--muted); }
+
+/* ---------- Navegación ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .wrap { display: flex; align-items: center; gap: 16px; height: 56px; }
+.brand { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; white-space: nowrap; display: flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none; }
+.brand i { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
+.brand i b { width: 3px; background: var(--accent); border-radius: 1px; display: block; }
+.brand i b:nth-child(1) { height: 6px; } .brand i b:nth-child(2) { height: 14px; } .brand i b:nth-child(3) { height: 9px; } .brand i b:nth-child(4) { height: 16px; }
+nav { margin-left: auto; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav::-webkit-scrollbar { display: none; }
+nav a { color: var(--muted); text-decoration: none; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; white-space: nowrap; }
+nav a:hover { color: var(--fg); background: var(--surface-2); }
+.theme-btn {
+  flex: none; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); cursor: pointer; display: grid; place-items: center;
+}
+.theme-btn:hover { background: var(--surface-2); }
+@media (max-width: 640px) { .brand span { display: none; } }
+
+/* ---------- Hero ---------- */
+.hero { padding-block: clamp(40px, 7vw, 88px) clamp(32px, 5vw, 56px); border-bottom: 1px solid var(--line); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.hero h1 { font-size: clamp(2.1rem, 5.2vw, 3.7rem); font-weight: 800; margin-top: 16px; }
+.hero h1 em { font-style: normal; color: var(--arg); }
+.hero h1 em + em { color: var(--res); }
+.hero .sub { margin-top: 16px; font-size: clamp(1.05rem, 2vw, 1.25rem); color: var(--muted); max-width: 52ch; }
+.course { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 14px; }
+.course .meta { font-size: 0.92rem; color: var(--muted); }
+.course .meta strong { color: var(--fg); font-weight: 600; }
+.authors { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.authors li { font-size: 0.9rem; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+
+.eq { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px 22px 18px; }
+.eq-bars { display: flex; align-items: flex-end; gap: clamp(4px, 1.2vw, 10px); height: 190px; border-bottom: 1px solid var(--line); }
+.eq-bar { flex: 1; min-width: 0; background: var(--accent); border-radius: 3px 3px 0 0; transform-origin: bottom; animation: rise 0.9s cubic-bezier(.2,.7,.2,1) backwards; position: relative; }
+.eq-bar:hover { outline: 2px solid var(--fg); outline-offset: 1px; }
+.eq-labels { display: flex; gap: clamp(4px, 1.2vw, 10px); margin-top: 8px; }
+.eq-labels span { flex: 1; min-width: 0; text-align: center; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+.eq-cap { margin-top: 14px; font-size: 0.84rem; color: var(--muted); line-height: 1.5; }
+.eq-cap b { color: var(--fg); font-weight: 600; }
+@keyframes rise { from { transform: scaleY(0.08); } }
+@media (max-width: 820px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: clamp(28px, 4vw, 48px); }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+.stat .k { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.stat .v { font-size: clamp(1.25rem, 2.6vw, 1.7rem); font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat .v small { font-size: 0.8rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.stat .arrow { color: var(--muted); font-weight: 400; padding-inline: 2px; }
+@media (max-width: 820px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Secciones ---------- */
+section.block { padding-block: clamp(48px, 7vw, 88px); border-bottom: 1px solid var(--line); }
+section.block:last-of-type { border-bottom: 0; }
+.sec-head { display: grid; gap: 12px; margin-bottom: clamp(24px, 4vw, 40px); max-width: 760px; }
+.sec-head h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); font-weight: 700; }
+.lead { color: var(--muted); font-size: 1.1rem; }
+.prose { max-width: 68ch; display: grid; gap: 16px; }
+.prose strong { font-weight: 600; }
+.two-col { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 56px); align-items: start; }
+@media (max-width: 820px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
+
+.question {
+  border-left: 3px solid var(--accent); padding: 4px 0 4px 20px; display: grid; gap: 10px;
+}
+.question .q { font-size: clamp(1.25rem, 2.6vw, 1.6rem); font-weight: 600; letter-spacing: -0.015em; line-height: 1.3; }
+.defs { display: grid; gap: 12px; margin-top: 20px; }
+.def { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
+.def code { font-family: var(--font-mono); font-size: 0.85rem; padding: 2px 8px; border-radius: 5px; background: var(--surface-2); color: var(--fg); }
+.def span { color: var(--muted); font-size: 0.95rem; }
+
+.refs { display: grid; gap: 10px; margin-top: 4px; }
+.ref { padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 0.93rem; color: var(--muted); }
+.ref b { color: var(--fg); font-weight: 600; }
+
+/* Embudo de datos */
+.funnel { display: grid; gap: 10px; }
+.f-row { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 14px; align-items: center; }
+.f-label { font-size: 0.9rem; color: var(--muted); line-height: 1.35; }
+.f-track { height: 34px; background: var(--surface); border-radius: 6px; position: relative; overflow: hidden; border: 1px solid var(--line); }
+.f-fill { height: 100%; background: var(--accent); opacity: 0.85; display: flex; align-items: center; padding-inline: 10px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-ink); font-weight: 500; white-space: nowrap; min-width: max-content; }
+.f-fill.res { background: var(--res); }
+.f-fill.arg { background: var(--arg); }
+.f-split { display: flex; height: 100%; }
+@media (max-width: 560px) { .f-row { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+
+.steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: clamp(28px, 4vw, 44px); }
+.step { padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; gap: 8px; align-content: start; min-width: 0; }
+.step h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+.step p, .step li { font-size: 0.95rem; color: var(--muted); }
+.step ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.step code { font-family: var(--font-mono); font-size: 0.82rem; background: var(--surface-2); padding: 1px 6px; border-radius: 4px; color: var(--fg); }
+.tag { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+@media (max-width: 720px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 4px 0 0; }
+.chips li { font-size: 0.78rem; font-family: var(--font-mono); padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.chips li b { color: var(--fg); font-weight: 500; margin-left: 4px; }
+
+.note { margin-top: 20px; padding: 14px 16px; border-radius: 10px; background: var(--surface-2); font-size: 0.93rem; color: var(--muted); max-width: 76ch; }
+.note b { color: var(--fg); font-weight: 600; }
+
+/* ---------- Figuras ---------- */
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(18px, 3vw, 32px); margin-top: 28px; min-width: 0; }
+.fig-head { display: grid; gap: 8px; margin-bottom: 20px; max-width: 70ch; }
+.fig-head h3 { font-size: clamp(1.2rem, 2.4vw, 1.5rem); font-weight: 700; }
+.fig-head .how { color: var(--muted); font-size: 0.97rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 14px; font-size: 0.9rem; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+.legend i.arg { background: var(--arg); } .legend i.res { background: var(--res); }
+.panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.panel-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+.panel-title small { font-weight: 400; color: var(--muted); font-size: 0.82rem; margin-left: 6px; }
+@media (max-width: 780px) { .panels { grid-template-columns: minmax(0, 1fr); } }
+
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; max-width: 100%; overflow: visible; }
+.chart text { font-family: var(--font-body); fill: var(--muted); font-size: 12px; }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .axis { stroke: var(--line); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1; }
+.chart .refline { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.7; fill: none; }
+.chart .guide { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .ln { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart .ln.arg, .chart .dot.arg, .chart .bar.arg { stroke: var(--arg); }
+.chart .ln.res, .chart .dot.res, .chart .bar.res { stroke: var(--res); }
+.chart .dot { fill: var(--surface); stroke-width: 2; }
+.chart .dot.arg { fill: var(--arg); } .chart .dot.res { fill: var(--res); }
+.chart .dot.hi { fill: var(--surface); stroke-width: 3; }
+.chart .gap { fill: none; stroke-width: 2; stroke-dasharray: 2 5; stroke-linecap: round; opacity: 0.6; }
+.chart .gap.arg { stroke: var(--arg); }
+.chart .endv { font-weight: 600; font-size: 12px; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+.chart .endv.arg { fill: var(--arg); } .chart .endv.res { fill: var(--res); }
+.chart .rowlabel { fill: var(--fg); font-weight: 600; font-size: 13px; }
+.chart .val { font-weight: 600; font-size: 12px; font-variant-numeric: tabular-nums; }
+.chart .val.arg { fill: var(--arg); } .chart .val.res { fill: var(--res); }
+.chart .bar { stroke: none; }
+.chart .bar.arg { fill: var(--arg); } .chart .bar.res { fill: var(--res); }
+.chart .quadfill { fill: var(--surface-2); opacity: 0.45; }
+.chart .quad { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--font-mono); fill: var(--muted); opacity: 0.85; }
+.chart .plbl { font-weight: 600; font-size: 11.5px; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.chart .plbl.arg { fill: var(--arg); } .chart .plbl.res { fill: var(--res); }
+.chart .axtitle { font-size: 12px; fill: var(--muted); }
+.chart .nodata { font-size: 11px; fill: var(--arg); opacity: 0.9; }
+
+.tip {
+  position: absolute; z-index: 5; pointer-events: none; min-width: 150px; max-width: 260px;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 12px; font-size: 0.82rem; line-height: 1.45; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.tip b { display: block; margin-bottom: 4px; font-weight: 600; }
+.tip .r { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.tip .r i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.tip .r em { font-style: normal; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tip .s { color: var(--muted); font-size: 0.76rem; margin-top: 2px; }
+
+.slider { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; font-size: 0.9rem; }
+.slider label { color: var(--muted); }
+.slider output { font-family: var(--font-mono); min-width: 5ch; font-variant-numeric: tabular-nums; }
+.slider input[type=range] { flex: 1 1 200px; max-width: 420px; accent-color: var(--accent); }
+
+.insight { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 40px); }
+.insight h4 { margin: 0 0 8px; font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 500; }
+.insight p + p { margin-top: 10px; }
+.insight p { font-size: 0.97rem; }
+.keyn { display: grid; gap: 10px; align-content: start; }
+.keyn div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 0.92rem; }
+.keyn div span:first-child { color: var(--muted); }
+.keyn div span:last-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+@media (max-width: 780px) { .insight { grid-template-columns: minmax(0, 1fr); } }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.95rem; }
+th, td { padding: 12px 16px; text-align: right; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line); }
+tbody tr + tr td { border-top: 1px solid var(--line); }
+td.arg { color: var(--arg); font-weight: 600; } td.res { color: var(--res); font-weight: 600; }
+caption { caption-side: bottom; text-align: left; padding: 10px 16px; font-size: 0.82rem; color: var(--muted); border-top: 1px solid var(--line); }
+
+details.data { margin-top: 16px; font-size: 0.88rem; color: var(--muted); }
+details.data summary { cursor: pointer; width: fit-content; }
+details.data .table-wrap { margin-top: 10px; }
+details.data table { min-width: 640px; font-size: 0.85rem; }
+details.data th, details.data td { padding: 8px 12px; }
+
+/* ---------- Conclusión ---------- */
+.answer { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; max-width: 28ch; text-wrap: balance; }
+.answer mark { background: none; color: var(--arg); }
+.answer mark + mark, .answer mark.r { color: var(--res); }
+.verdicts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
+.verdict { padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; gap: 8px; align-content: start; min-width: 0; }
+.verdict .tag { color: var(--muted); }
+.verdict .big { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.verdict p { font-size: 0.93rem; color: var(--muted); }
+.verdict .mono { color: var(--fg); }
+@media (max-width: 860px) { .verdicts { grid-template-columns: minmax(0, 1fr); } }
+.limits { margin-top: 40px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 4vw, 48px); }
+.limits h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; }
+.limits ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); font-size: 0.97rem; }
+.limits ul li::marker { color: var(--accent); }
+@media (max-width: 780px) { .limits { grid-template-columns: minmax(0, 1fr); } }
+
+footer { border-top: 1px solid var(--line); padding-block: 32px 48px; font-size: 0.88rem; color: var(--muted); }
+footer .wrap { display: grid; gap: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .eq-bar { animation: none; }
+}
+
+/* ---------- Modo presentación ---------- */
+.mode-btn {
+  position: fixed; z-index: 25;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border: 0; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink); font: 600 0.9rem var(--font-body); cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+.mode-btn:hover { filter: brightness(1.08); }
+.pctl, .pprog { display: none; }
+html.present { font-size: clamp(100%, 1.3vw, 125%); }
+html.present body { overflow: hidden; }
+html.present .topbar, html.present footer, html.present .mode-btn { display: none; }
+html.present main { position: fixed; inset: 0; z-index: 30; background: var(--bg); }
+html.present main > section { display: none; border: 0; }
+html.present main > section.active {
+  display: flex; flex-direction: column; height: 100%; overflow-y: auto; padding-block: 4vh 84px;
+}
+html.present main > section.active > .wrap { margin-block: auto; max-width: 1180px; }
+html.present [data-slide]:not(.on) { display: none; }
+html.present .unrevealed { display: none; }
+html.present [data-slide].on { animation: slidein 0.35s ease both; }
+html.present .fig { margin-top: 0; }
+html.present .sec-head { margin-bottom: 1.4rem; }
+html.present .hero { padding-block: 0; }
+html.present .stats { margin-top: 2rem; }
+@keyframes slidein { from { opacity: 0; transform: translateY(10px); } }
+
+html.present .pprog { display: block; position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--accent); z-index: 41; transition: width 0.3s ease; }
+html.present .pctl {
+  display: flex; align-items: center; gap: 10px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  padding: 24px max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(to bottom, transparent, var(--bg) 55%); pointer-events: none;
+}
+.pctl > * { pointer-events: auto; }
+.pctl button {
+  height: 40px; min-width: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); cursor: pointer; font: 500 0.9rem var(--font-body);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.pctl button:hover { background: var(--surface-2); }
+.pctl .count { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); min-width: 6ch; text-align: center; font-variant-numeric: tabular-nums; }
+.pctl .hint { margin-left: auto; font-size: 0.8rem; color: var(--muted); }
+.pctl .spacer { flex: 1; }
+@media (max-width: 760px) { .pctl .hint { display: none; } .pctl .exit span { display: none; } }
+@media (prefers-reduced-motion: reduce) { html.present [data-slide].on { animation: none; } .pprog { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="Ir al inicio"><i aria-hidden="true"><b></b><b></b><b></b><b></b></i><span>Energía y valencia</span></a>
+    <nav aria-label="Secciones">
+      <a href="#introduccion">Introducción</a>
+      <a href="#datos">Datos</a>
+      <a href="#hallazgos">Hallazgos</a>
+      <a href="#conclusion">Conclusión</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+<!-- ======================= HERO ======================= -->
+<section class="hero" id="inicio">
+  <div class="wrap">
+    <div class="hero-grid" data-slide="1">
+      <div>
+        <div class="eyebrow">Trabajo práctico grupal · Informe académico</div>
+        <h1>¿La música se volvió más <em>enérgica</em> y menos <em>alegre</em>?</h1>
+        <p class="sub">Un siglo de canciones de Spotify (1920–2021) y una comparación entre las clasificadas como argentinas y el resto del dataset.</p>
+        <div class="course">
+          <p class="meta"><strong>Laboratorio de Métodos Cuantitativos</strong> · Facultad de Ciencias Económicas, UBA · 2.º cuatrimestre 2026</p>
+          <ul class="authors" aria-label="Integrantes del grupo">
+            <li>Manuel Mariani</li>
+            <li>Sergio Sebastian Cordoba</li>
+            <li>Mauro Nohara Gushiken</li>
+            <li>Facundo Malpeli</li>
+          </ul>
+        </div>
+      </div>
+
+      <figure class="eq" style="margin:0">
+        <div class="eq-bars" id="eqBars" role="img" aria-label="Una barra por década entre 1920 y 2010. La altura es la energía promedio y la intensidad del color es la valencia promedio."></div>
+        <div class="eq-labels" id="eqLabels" aria-hidden="true"></div>
+        <figcaption class="eq-cap">Cada barra es una década. <b>La altura es la energía promedio</b> del total analizado y <b>la intensidad del color es la valencia</b>: las barras suben y, hacia el final, se apagan.</figcaption>
+      </figure>
+    </div>
+
+    <div class="stats" data-slide="1">
+      <div class="stat"><div class="k">Canciones analizadas</div><div class="v">504.030 <small>de 586.672</small></div></div>
+      <div class="stat"><div class="k">Clasificadas argentinas</div><div class="v">11.898 <small>(2,4 %)</small></div></div>
+      <div class="stat"><div class="k">Energía 1920 → 2010</div><div class="v">0,305<span class="arrow"> → </span>0,657</div></div>
+      <div class="stat"><div class="k">Valencia 1920 → 2010</div><div class="v">0,619<span class="arrow"> → </span>0,515</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= INTRODUCCIÓN ======================= -->
+<section class="block" id="introduccion">
+  <div class="wrap">
+    <div class="sec-head" data-slide="2">
+      <div class="eyebrow">Introducción</div>
+      <h2>Qué se pregunta y por qué importa</h2>
+    </div>
+    <div class="two-col" data-slide="2">
+      <div class="prose">
+        <p>La música grabada cambia junto con los estilos, las tecnologías de producción y las prácticas culturales. Estudios previos midieron esas transformaciones: <strong>Interiano et al. (2018)</strong> analizaron tendencias en las características musicales de canciones dentro y fuera de los rankings, y <strong>Brand, Acerbi y Mesoudi (2019)</strong> estudiaron el contenido emocional de las letras.</p>
+        <p>Ese último enfoque parte del texto. Este trabajo estudia, en cambio, <strong>atributos de audio</strong> que Spotify calcula para cada canción. La respuesta interesa a la industria musical, que decide qué producir y para qué público, y al diseño de políticas culturales de fomento de la música nacional.</p>
+        <p>El hilo conductor es una comparación: ¿la música argentina se fue pareciendo a la global o conserva un perfil propio? Se responde con promedios por década, entre 1920 y 2010.</p>
+        <div class="defs">
+          <div class="def"><code>energy</code><span>De 0 a 1. Qué tan intensa y activa suena la canción.</span></div>
+          <div class="def"><code>valence</code><span>De 0 a 1. Qué tan positiva o alegre suena. Es una aproximación a la positividad musical percibida, no una medición de las emociones de los oyentes.</span></div>
+        </div>
+      </div>
+
+      <div style="display:grid; gap:20px">
+        <div class="question">
+          <div class="eyebrow">Pregunta de investigación</div>
+          <p class="q">¿Cómo evolucionaron los promedios de energía y valencia entre las décadas de 1920 y 2010, y las canciones argentinas siguieron una tendencia similar a las del resto?</p>
+        </div>
+        <div class="refs">
+          <div class="ref"><b>Fuente de datos.</b> Spotify Dataset 1921–2020 en Kaggle, publicado por <i>yamaerenay</i>. Se usan <code>tracks.csv</code> y <code>artists.csv</code>.</div>
+          <div class="ref"><b>Alcance.</b> Los resultados describen las canciones del dataset. No miden preferencias de los oyentes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TRANSFORMACIONES Y DATOS ======================= -->
+<section class="block" id="datos">
+  <div class="wrap">
+    <div class="sec-head" data-slide="3">
+      <div class="eyebrow">Transformaciones y datos</div>
+      <h2>De 586.672 pistas a una muestra comparable</h2>
+      <p class="lead">El trabajo se hizo en Python con pandas, numpy, matplotlib y seaborn. Cada filtro tiene una razón que se puede verificar en el notebook.</p>
+    </div>
+
+    <div class="funnel" data-slide="3" role="img" aria-label="Embudo de filas: 586.672 pistas originales, 563.806 después de filtrar, 504.030 sin reediciones, de las cuales 11.898 argentinas y 492.132 resto.">
+      <div class="f-row"><div class="f-label">Pistas en <code>tracks.csv</code></div><div class="f-track"><div class="f-fill" style="width:100%">586.672</div></div></div>
+      <div class="f-row"><div class="f-label">Después de filtrar filas</div><div class="f-track"><div class="f-fill" style="width:96.1%">563.806</div></div></div>
+      <div class="f-row"><div class="f-label">Sin reediciones (muestra final)</div><div class="f-track"><div class="f-fill" style="width:85.9%">504.030</div></div></div>
+      <div class="f-row"><div class="f-label">Por origen del artista principal</div>
+        <div class="f-track"><div class="f-split" style="width:85.9%">
+          <div class="f-fill arg" style="width:2.4%; min-width:0; padding:0"></div>
+          <div class="f-fill res" style="width:97.6%; justify-content:flex-end">Resto 492.132</div>
+        </div></div>
+      </div>
+      <div class="f-row"><div class="f-label"></div><div class="f-label" style="color:var(--arg)">Argentina: 11.898 canciones (2,4 % de la muestra)</div></div>
+    </div>
+
+    <div class="steps" data-slide="4">
+      <div class="step">
+        <span class="tag">Variables nuevas</span>
+        <h3>Año y década de lanzamiento</h3>
+        <p><code>release_date</code> mezcla formatos y el 23,3 % de las pistas trae solo el año. Se toman los primeros cuatro caracteres como año y se agrupa por década, que suaviza el ruido de los años con pocas canciones.</p>
+      </div>
+      <div class="step">
+        <span class="tag">Filtros de filas</span>
+        <h3>Solo música, desde 1920</h3>
+        <ul>
+          <li>Se excluyen registros anteriores a 1920 (en 1900 hay una sola canción).</li>
+          <li>Se excluyen pistas casi habladas: <code>speechiness &gt; 0,66</code>. Las más extremas son audiolibros.</li>
+          <li>Se excluyen pistas de menos de 30 segundos, como intros y separadores.</li>
+          <li>Se excluyen las 71 canciones sin nombre.</li>
+        </ul>
+      </div>
+      <div class="step">
+        <span class="tag">Duplicados</span>
+        <h3>Una versión por canción</h3>
+        <p>El 10,2 % de las pistas repite nombre y artista: son reediciones y compilados. Se conserva la de fecha más antigua, la más cercana al lanzamiento original. Se eliminaron 59.776 filas.</p>
+      </div>
+      <div class="step">
+        <span class="tag">Variable nueva</span>
+        <h3>Origen: Argentina o Resto</h3>
+        <p>Spotify asigna géneros a los artistas, no a las canciones. Se cruza el artista principal de cada pista con <code>artists.csv</code> y se marca como argentina si alguno de sus géneros contiene: <i>argentin, tango, rock nacional, cuarteto, chamame, cumbia villera, rkt</i>. Se excluyen "finnish tango" y "rock nacional brasileiro".</p>
+        <ul class="chips" aria-label="Géneros que más canciones aportaron">
+          <li>argentine rock<b>4.903</b></li><li>rock nacional<b>3.474</b></li><li>tango<b>2.941</b></li><li>vintage tango<b>2.720</b></li><li>folklore argentino<b>1.738</b></li><li>cumbia villera<b>1.331</b></li><li>ska argentino<b>1.000</b></li><li>chamame<b>871</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="note" data-slide="3"><b>Una limitación de origen.</b> El 73,7 % de los 1.162.095 artistas del archivo no tiene géneros asignados. Por eso la categoría Resto también incluye canciones sin clasificación de género, y parte de la música argentina puede estar en ese grupo.</p>
+  </div>
+</section>
+
+<!-- ======================= HALLAZGOS ======================= -->
+<section class="block" id="hallazgos">
+  <div class="wrap">
+    <div class="sec-head" data-slide="5">
+      <div class="eyebrow">Hallazgos principales</div>
+      <h2>Tres gráficos para leer el cambio</h2>
+      <p class="lead">Pasá el cursor o tocá los gráficos para ver el valor exacto de cada década y la cantidad de canciones detrás del promedio.</p>
+    </div>
+
+    <div class="table-wrap" data-slide="5">
+      <table>
+        <caption>Tabla 1. Promedios de energía y valencia en las décadas inicial y final. Fuente: elaboración propia con datos de Spotify (Kaggle).</caption>
+        <thead><tr><th>Grupo</th><th>Energía 1920</th><th>Energía 2010</th><th>Valencia 1920</th><th>Valencia 2010</th></tr></thead>
+        <tbody>
+          <tr><td>Total analizado</td><td>0,305</td><td>0,657</td><td>0,619</td><td>0,515</td></tr>
+          <tr><td>Argentina</td><td class="arg">0,227</td><td class="arg">0,703</td><td class="arg">0,702</td><td class="arg">0,651</td></tr>
+          <tr><td>Resto</td><td class="res">0,334</td><td class="res">0,656</td><td class="res">0,588</td><td class="res">0,512</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Figura 1 -->
+    <article class="fig" id="fig1" data-slide="6">
+      <div class="fig-head">
+        <div class="eyebrow">Figura 1</div>
+        <h3>Evolución de la energía y la valencia por década</h3>
+        <p class="how">Dos paneles con la misma escala (0,2 a 0,8). Cada línea es el promedio de una década para un grupo. Las décadas con menos de 100 canciones quedan fuera de la comparación.</p>
+      </div>
+      <div class="legend"><span><i class="arg"></i>Argentina</span><span><i class="res"></i>Resto</span></div>
+      <div class="panels">
+        <div><div class="panel-title">Energía <small>0 = suave, 1 = intensa</small></div><div class="chart" id="chE"><div class="plot"></div></div></div>
+        <div><div class="panel-title">Valencia <small>0 = triste, 1 = alegre</small></div><div class="chart" id="chV"><div class="plot"></div></div></div>
+      </div>
+      <details class="data"><summary>Ver los datos de esta figura</summary><div class="table-wrap"><table id="tbl1"></table></div></details>
+      <div class="insight" data-reveal>
+        <div>
+          <h4>Interpretación</h4>
+          <p>La energía argentina empieza a subir entre los años 20 y 30. En el resto baja hasta los 40 y luego crece. En ambos grupos la tendencia ascendente se marca desde los 60 y 70. En los 70 el resto supera a Argentina, pero desde los 80 la media argentina vuelve a quedar por encima.</p>
+          <p>La valencia no baja de manera continua. En Argentina sube en los 30, cae hasta los 70 y se recupera después, con una leve baja en los 2010. En el resto baja hasta los 50, sube hasta los 70 y luego desciende. Aun así, en 2010 es menor que en 1920 en ambos grupos.</p>
+          <p class="muted">El promedio argentino de los años 50 no aparece: sus 96 canciones no alcanzan el mínimo de 100.</p>
+        </div>
+        <div class="keyn">
+          <div><span>Energía, Argentina</span><span>0,227 → 0,703</span></div>
+          <div><span>Energía, Resto</span><span>0,334 → 0,656</span></div>
+          <div><span>Valencia, Argentina</span><span>0,702 → 0,651</span></div>
+          <div><span>Valencia, Resto</span><span>0,588 → 0,512</span></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Figura 2 -->
+    <article class="fig" id="fig2" data-slide="7">
+      <div class="fig-head">
+        <div class="eyebrow">Figura 2</div>
+        <h3>Cuánto cambió cada atributo entre 1920 y 2010</h3>
+        <p class="how">Diferencia entre el promedio de la década de 2010 y el de 1920. Una barra hacia la derecha indica que el atributo aumentó; hacia la izquierda, que disminuyó. Si las barras de ambos colores van en el mismo sentido, Argentina siguió la tendencia del resto.</p>
+      </div>
+      <div class="legend"><span><i class="arg"></i>Argentina</span><span><i class="res"></i>Resto</span></div>
+      <div class="chart" id="chD"><div class="plot"></div></div>
+      <div class="insight" data-reveal>
+        <div>
+          <h4>Interpretación</h4>
+          <p>La energía aumentó y la acusticidad disminuyó en ambos grupos. El aumento de energía fue mayor en Argentina (+0,476 frente a +0,322) y la caída de acusticidad también fue algo más pronunciada (−0,720 frente a −0,644).</p>
+          <p>La valencia disminuyó en los dos grupos, con una caída mayor en el resto (−0,075 frente a −0,051). La bailabilidad fue la excepción: casi no varió en Argentina (−0,003) y aumentó en el resto (+0,055). Los grupos compartieron la dirección del cambio en tres atributos, pero no en bailabilidad.</p>
+        </div>
+        <div class="keyn">
+          <div><span>Energía</span><span>+0,476 · +0,322</span></div>
+          <div><span>Valencia</span><span>−0,051 · −0,075</span></div>
+          <div><span>Acusticidad</span><span>−0,720 · −0,644</span></div>
+          <div><span>Bailabilidad</span><span>−0,003 · +0,055</span></div>
+          <div class="muted" style="border:0; font-size:0.8rem; padding-top:0"><span>Orden: Argentina · Resto</span><span></span></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Figura 3 -->
+    <article class="fig" id="fig3" data-slide="8">
+      <div class="fig-head">
+        <div class="eyebrow">Figura 3</div>
+        <h3>Mapa de ánimo: energía contra valencia</h3>
+        <p class="how">Cada punto es el promedio de una década y la línea muestra el recorrido en el tiempo. Los cuadrantes usan un corte en 0,5 y son una guía visual, no categorías establecidas para todas las canciones. Mové el control para recorrer las décadas.</p>
+      </div>
+      <div class="legend"><span><i class="arg"></i>Argentina</span><span><i class="res"></i>Resto</span><span class="muted">Línea punteada: década sin dato suficiente</span></div>
+      <div class="chart" id="chM"><div class="plot"></div></div>
+      <div class="slider">
+        <label for="decRange">Mostrar hasta la década de</label>
+        <input type="range" id="decRange" min="0" max="9" step="1" value="9">
+        <output id="decOut" for="decRange">2010</output>
+      </div>
+      <div class="insight" data-reveal>
+        <div>
+          <h4>Interpretación</h4>
+          <p>Entre 1920 y 2010 ambos grupos se desplazaron del cuadrante de música tranquila, con poca energía y valencia alta, al de música alegre y enérgica. En los dos aumentó la energía y disminuyó la valencia, aunque esta se mantuvo por encima de 0,5 en 2010.</p>
+          <p>Por eso ningún grupo terminó en el cuadrante tenso, que combina energía superior a 0,5 con valencia inferior a 0,5. Los recorridos no fueron idénticos: la energía aumentó más en Argentina y la valencia fluctuó distinto en cada grupo. El gráfico resume promedios por década; no implica que todas las canciones de un grupo compartan esas características.</p>
+        </div>
+        <div class="keyn">
+          <div><span>Argentina 1920</span><span>E 0,227 · V 0,702</span></div>
+          <div><span>Argentina 2010</span><span>E 0,703 · V 0,651</span></div>
+          <div><span>Resto 1920</span><span>E 0,334 · V 0,588</span></div>
+          <div><span>Resto 2010</span><span>E 0,656 · V 0,512</span></div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ======================= CONCLUSIÓN ======================= -->
+<section class="block" id="conclusion">
+  <div class="wrap">
+    <div class="sec-head" data-slide="9">
+      <div class="eyebrow">Conclusión</div>
+      <h2>La respuesta a la pregunta inicial</h2>
+    </div>
+    <p class="answer" data-slide="9">Sí, comparando los extremos: la música del dataset se volvió <mark>más enérgica</mark> y <mark class="r">menos alegre</mark>, y Argentina fue en la misma dirección.</p>
+
+    <div class="verdicts" data-slide="9">
+      <div class="verdict">
+        <span class="tag">Más enérgica</span>
+        <div class="big mono" style="color:var(--arg)">Sí</div>
+        <p>La energía promedio pasó de <span class="mono">0,305</span> a <span class="mono">0,657</span>. Aumentó más en Argentina (<span class="mono">+0,476</span>) que en el resto (<span class="mono">+0,322</span>).</p>
+      </div>
+      <div class="verdict">
+        <span class="tag">Menos alegre</span>
+        <div class="big mono" style="color:var(--res)">Sí, en menor medida</div>
+        <p>La valencia pasó de <span class="mono">0,619</span> a <span class="mono">0,515</span>. La caída fue mayor en el resto (<span class="mono">0,075</span>) que en Argentina (<span class="mono">0,051</span>) y ambos grupos siguen por encima de 0,5.</p>
+      </div>
+      <div class="verdict">
+        <span class="tag">Argentina frente al resto</span>
+        <div class="big">Misma dirección</div>
+        <p>Las magnitudes difieren y las trayectorias intermedias no fueron uniformes. Los resultados no indican que los atributos hayan cambiado de forma continua en todas las décadas.</p>
+      </div>
+    </div>
+
+    <div class="limits" data-slide="10">
+      <div>
+        <h3>Cómo interpretar estos resultados</h3>
+        <ul>
+          <li>Describen las canciones incluidas en el dataset. No miden preferencias de los oyentes ni representan toda la música publicada en cada época.</li>
+          <li>La valencia es un atributo de audio estimado por Spotify y funciona como aproximación a la positividad musical.</li>
+          <li>La clasificación argentina depende de las etiquetas de género del artista principal. Muchos artistas no tienen género y quedan en Resto.</li>
+          <li>La comparación llega hasta la década de 2010 y la cantidad de canciones varía mucho entre décadas.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Próximos pasos</h3>
+        <ul>
+          <li>Analizar cada género argentino por separado y comparar tendencias dentro de cada uno.</li>
+          <li>Incorporar una fuente más completa para identificar artistas argentinos.</li>
+          <li>Estudiar los cambios año por año, no solo por década.</li>
+          <li>Comprobar si los resultados se mantienen con otros métodos de resumen, además del promedio.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="note" data-slide="10"><b>Reflexión metodológica.</b> Se usaron Claude y ChatGPT para explorar el dataset, revisar el código, proponer interpretaciones y redactar algunas secciones. Cada sugerencia se contrastó con las columnas, las salidas y los gráficos del notebook. El grupo concluyó que la IA agiliza la exploración y la redacción, pero sus propuestas necesitan revisión humana y pueden no ajustarse a los datos disponibles.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>¿La música se volvió más enérgica y menos alegre? Argentina frente al mundo (1920–2021).</strong> Laboratorio de Métodos Cuantitativos, FCE UBA, 2.º cuatrimestre 2026.</p>
+    <p>Manuel Mariani · Sergio Sebastian Cordoba · Mauro Nohara Gushiken · Facundo Malpeli · 6 de noviembre de 2026</p>
+    <p>Datos: <a href="https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks" target="_blank" rel="noopener">Spotify Dataset 1921–2020, 600k+ Tracks</a> (Kaggle, usuario yamaerenay).</p>
+  </div>
+</footer>
+
+<button class="mode-btn" id="presentBtn" type="button" aria-label="Entrar al modo presentación">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg>
+  Modo presentación
+</button>
+<div class="pprog" id="pProg" aria-hidden="true"></div>
+<div class="pctl" id="pCtl" role="toolbar" aria-label="Controles de la presentación">
+  <button type="button" id="pPrev" aria-label="Diapositiva anterior">←</button>
+  <span class="count" id="pCount" aria-live="polite">1 / 10</span>
+  <button type="button" id="pNext" aria-label="Siguiente paso">→</button>
+  <span class="hint">← → para avanzar · → también revela la interpretación · F pantalla completa · Esc para salir</span>
+  <span class="spacer"></span>
+  <button type="button" id="pFull" aria-label="Pantalla completa">⛶</button>
+  <button type="button" class="exit" id="pExit" aria-label="Volver al modo lectura">✕ <span>Modo lectura</span></button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Datos (salidas del notebook, promedios por década) ---------- */
+  var D = [
+    { d: 1920, nA: 1344, nR: 3591,  eA: 0.227, eR: 0.334, vA: 0.702, vR: 0.588, eT: 0.305, vT: 0.619 },
+    { d: 1930, nA: 983,  nR: 9202,  eA: 0.308, eR: 0.316, vA: 0.759, vR: 0.554, eT: 0.315, vT: 0.573 },
+    { d: 1940, nA: 279,  nR: 14940, eA: 0.327, eR: 0.272, vA: 0.705, vR: 0.495, eT: 0.273, vT: 0.499 },
+    { d: 1950, nA: 96,   nR: 30622, eA: null,  eR: 0.301, vA: null,  vR: 0.493, eT: 0.302, vT: 0.493 },
+    { d: 1960, nA: 602,  nR: 41494, eA: 0.423, eR: 0.406, vA: 0.556, vR: 0.564, eT: 0.406, vT: 0.564 },
+    { d: 1970, nA: 1017, nR: 52788, eA: 0.427, eR: 0.504, vA: 0.489, vR: 0.584, eT: 0.502, vT: 0.583 },
+    { d: 1980, nA: 1263, nR: 66912, eA: 0.586, eR: 0.560, vA: 0.573, vR: 0.582, eT: 0.561, vT: 0.582 },
+    { d: 1990, nA: 2502, nR: 91043, eA: 0.641, eR: 0.577, vA: 0.616, vR: 0.568, eT: 0.579, vT: 0.569 },
+    { d: 2000, nA: 2134, nR: 72244, eA: 0.718, eR: 0.649, vA: 0.665, vR: 0.562, eT: 0.651, vT: 0.565 },
+    { d: 2010, nA: 1546, nR: 92275, eA: 0.703, eR: 0.656, vA: 0.651, vR: 0.512, eT: 0.657, vT: 0.515 }
+  ];
+  var N = D.length;
+
+  var nf = function (v, d) {
+    d = d === undefined ? 3 : d;
+    return v == null ? "sin dato" : v.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  };
+  var sg = function (v) { return (v > 0 ? "+" : v < 0 ? "−" : "") + nf(Math.abs(v)); };
+  var ni = function (v) { return v.toLocaleString("es-AR"); };
+
+  /* ---------- Tema ---------- */
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    var root = document.documentElement;
+    var cur = root.getAttribute("data-theme");
+    if (!cur) cur = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    var next = cur === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("tp-theme", next); } catch (e) {}
+  });
+
+  /* ---------- Hero: ecualizador por década ---------- */
+  (function () {
+    var bars = document.getElementById("eqBars"), labels = document.getElementById("eqLabels");
+    var minV = 0.49, maxV = 0.62;
+    D.forEach(function (r, i) {
+      var b = document.createElement("div");
+      b.className = "eq-bar";
+      b.style.height = (r.eT / 0.7 * 100) + "%";
+      b.style.opacity = (0.3 + 0.7 * (r.vT - minV) / (maxV - minV)).toFixed(2);
+      b.style.animationDelay = (i * 55) + "ms";
+      b.title = r.d + "s · energía " + nf(r.eT) + " · valencia " + nf(r.vT);
+      bars.appendChild(b);
+      var l = document.createElement("span");
+      l.textContent = "'" + String(r.d).slice(2);
+      labels.appendChild(l);
+    });
+  })();
+
+  /* ---------- Utilidades de gráficos ---------- */
+  function makeTip(host) {
+    var t = document.createElement("div");
+    t.className = "tip"; t.hidden = true; host.appendChild(t);
+    return {
+      show: function (html, x, y) {
+        t.innerHTML = html; t.hidden = false;
+        var w = t.offsetWidth, h = t.offsetHeight, W = host.clientWidth;
+        var left = x + 14; if (left + w > W) left = x - w - 14; if (left < 0) left = 0;
+        var top = y - h - 10; if (top < 0) top = y + 14;
+        t.style.left = left + "px"; t.style.top = top + "px";
+      },
+      hide: function () { t.hidden = true; }
+    };
+  }
+  function row(cls, name, val, extra) {
+    var col = cls === "arg" ? "var(--arg)" : "var(--res)";
+    return '<div class="r"><span><i style="background:' + col + '"></i>' + name + "</span><em>" + val + "</em></div>" + (extra ? '<div class="s">' + extra + "</div>" : "");
+  }
+  function isPresent() { return document.documentElement.classList.contains("present"); }
+  function watch(host, draw) {
+    var last = 0;
+    window.addEventListener("tp-redraw", function () { if (host.clientWidth) draw(); });
+    var ro = new ResizeObserver(function () {
+      var w = host.clientWidth;
+      if (w && Math.abs(w - last) > 1) { last = w; draw(); }
+    });
+    ro.observe(host);
+  }
+  function relX(plot, e) { return e.clientX - plot.getBoundingClientRect().left; }
+  function relY(plot, e) { return e.clientY - plot.getBoundingClientRect().top; }
+
+  /* ---------- Figura 1: líneas por década ---------- */
+  var lineCharts = [];
+  function lineChart(hostId, cfg) {
+    var host = document.getElementById(hostId), plot = host.querySelector(".plot");
+    var tip = makeTip(host), g = null, active = -1;
+
+    function draw() {
+      var W = Math.max(260, host.clientWidth), H = Math.round(Math.min(isPresent() ? Math.max(300, window.innerHeight * 0.42) : 330, Math.max(240, W * 0.62)));
+      var m = { t: 18, r: 18, b: 34, l: 40 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+      var X = function (i) { return m.l + iw * i / (N - 1); };
+      var Y = function (v) { return m.t + ih * (1 - (v - cfg.min) / (cfg.max - cfg.min)); };
+      g = { m: m, iw: iw, X: X, Y: Y, W: W, H: H };
+      var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + cfg.aria + '">';
+      var nt = Math.round((cfg.max - cfg.min) / cfg.step);
+      for (var k = 0; k <= nt; k++) {
+        var v = cfg.min + k * cfg.step, yy = Y(v);
+        s += '<line class="grid" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + yy + '" y2="' + yy + '"/>';
+        s += '<text x="' + (m.l - 8) + '" y="' + (yy + 4) + '" text-anchor="end">' + nf(v, 1) + "</text>";
+      }
+      s += '<line class="axis" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + (H - m.b) + '" y2="' + (H - m.b) + '"/>';
+      var skip = W < 480 ? 2 : 1;
+      D.forEach(function (r, i) {
+        if ((N - 1 - i) % skip === 0) s += '<text x="' + X(i) + '" y="' + (H - m.b + 20) + '" text-anchor="middle">' + (skip > 1 ? "'" + String(r.d).slice(2) : r.d + "s") + "</text>";
+      });
+      cfg.series.forEach(function (se) {
+        var dstr = "", pen = false, prev = -1;
+        D.forEach(function (r, i) {
+          var v = r[se.key];
+          if (v == null) { pen = false; return; }
+          dstr += (pen ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); pen = true;
+        });
+        /* tramo punteado donde falta el dato */
+        for (var i = 1; i < N - 1; i++) {
+          if (D[i][se.key] == null && D[i - 1][se.key] != null && D[i + 1][se.key] != null) {
+            s += '<path class="gap ' + se.cls + '" d="M' + X(i - 1) + " " + Y(D[i - 1][se.key]) + "L" + X(i + 1) + " " + Y(D[i + 1][se.key]) + '"/>';
+            s += '<text class="nodata" x="' + X(i) + '" y="' + (H - m.b - 8) + '" text-anchor="middle">n &lt; 100</text>';
+          }
+        }
+        s += '<path class="ln ' + se.cls + '" d="' + dstr + '"/>';
+        D.forEach(function (r, i) {
+          if (r[se.key] != null) s += '<circle class="dot ' + se.cls + '" cx="' + X(i) + '" cy="' + Y(r[se.key]) + '" r="3.5"/>';
+        });
+      });
+      /* valores finales */
+      var lastI = N - 1, a = D[lastI][cfg.series[0].key], b = D[lastI][cfg.series[1].key];
+      cfg.series.forEach(function (se, idx) {
+        var v = D[lastI][se.key], other = D[lastI][cfg.series[1 - idx].key];
+        var above = v >= other;
+        s += '<text class="endv ' + se.cls + '" x="' + (X(lastI) + 4) + '" y="' + (Y(v) + (above ? -10 : 18)) + '" text-anchor="end">' + nf(v) + "</text>";
+      });
+      s += '<g class="hov"></g></svg>';
+      plot.innerHTML = s;
+      paint();
+    }
+
+    function paint() {
+      var gr = plot.querySelector(".hov");
+      if (!gr || !g) return;
+      if (active < 0) { gr.innerHTML = ""; return; }
+      var h = '<line class="guide" x1="' + g.X(active) + '" x2="' + g.X(active) + '" y1="' + g.m.t + '" y2="' + (g.H - g.m.b) + '"/>';
+      cfg.series.forEach(function (se) {
+        var v = D[active][se.key];
+        if (v != null) h += '<circle class="dot hi ' + se.cls + '" cx="' + g.X(active) + '" cy="' + g.Y(v) + '" r="6"/>';
+      });
+      gr.innerHTML = h;
+    }
+
+    function setActive(i) { active = i; paint(); }
+    function nearest(e) {
+      var x = relX(plot, e) - g.m.l;
+      var i = Math.round(x / (g.iw / (N - 1)));
+      return Math.max(0, Math.min(N - 1, i));
+    }
+    plot.addEventListener("pointermove", function (e) {
+      if (!g) return;
+      var i = nearest(e);
+      lineCharts.forEach(function (c) { c.setActive(i); });
+      var r = D[i], html = "<b>Años " + r.d + "</b>";
+      cfg.series.forEach(function (se) {
+        var n = se.cls === "arg" ? r.nA : r.nR;
+        html += row(se.cls, se.name, nf(r[se.key]), ni(n) + " canciones" + (r[se.key] == null ? " (menos de 100)" : ""));
+      });
+      tip.show(html, relX(plot, e), relY(plot, e));
+    });
+    plot.addEventListener("pointerleave", function () {
+      lineCharts.forEach(function (c) { c.setActive(-1); });
+      tip.hide();
+    });
+    var api = { setActive: setActive };
+    lineCharts.push(api);
+    draw(); watch(host, draw);
+  }
+  lineChart("chE", { min: 0.2, max: 0.8, step: 0.1, aria: "Energía promedio por década, Argentina y Resto, de 1920 a 2010",
+    series: [{ key: "eA", cls: "arg", name: "Argentina" }, { key: "eR", cls: "res", name: "Resto" }] });
+  lineChart("chV", { min: 0.2, max: 0.8, step: 0.1, aria: "Valencia promedio por década, Argentina y Resto, de 1920 a 2010",
+    series: [{ key: "vA", cls: "arg", name: "Argentina" }, { key: "vR", cls: "res", name: "Resto" }] });
+
+  /* tabla de datos de la figura 1 */
+  (function () {
+    var t = document.getElementById("tbl1");
+    var h = "<thead><tr><th>Década</th><th>Energía Arg.</th><th>Energía Resto</th><th>Valencia Arg.</th><th>Valencia Resto</th><th>Canciones Arg.</th><th>Canciones Resto</th></tr></thead><tbody>";
+    D.forEach(function (r) {
+      h += "<tr><td>" + r.d + "</td><td>" + nf(r.eA) + "</td><td>" + nf(r.eR) + "</td><td>" + nf(r.vA) + "</td><td>" + nf(r.vR) + "</td><td>" + ni(r.nA) + "</td><td>" + ni(r.nR) + "</td></tr>";
+    });
+    t.innerHTML = h + "</tbody>";
+  })();
+
+  /* ---------- Figura 2: cambios 1920 → 2010 ---------- */
+  (function () {
+    var host = document.getElementById("chD"), plot = host.querySelector(".plot"), tip = makeTip(host);
+    var rows = [
+      { name: "Energía",       a: 0.476,  r: 0.322,  ea: [0.227, 0.703], er: [0.334, 0.656] },
+      { name: "Valencia (alegría)", a: -0.051, r: -0.075, ea: [0.702, 0.651], er: [0.588, 0.512] },
+      { name: "Acusticidad",   a: -0.720, r: -0.644 },
+      { name: "Bailabilidad",  a: -0.003, r: 0.055 }
+    ];
+    var lo = -0.95, hi = 0.7;
+    function draw() {
+      var W = Math.max(260, host.clientWidth), rowH = 74, m = { t: 6, r: 14, b: 30, l: 14 };
+      var H = m.t + rows.length * rowH + m.b, iw = W - m.l - m.r;
+      var X = function (v) { return m.l + iw * (v - lo) / (hi - lo); };
+      var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Cambio de energía, valencia, acusticidad y bailabilidad entre 1920 y 2010 para Argentina y Resto">';
+      for (var v = -0.8; v <= 0.61; v += 0.2) {
+        var vv = Math.round(v * 10) / 10;
+        s += '<line class="grid" x1="' + X(vv) + '" x2="' + X(vv) + '" y1="' + m.t + '" y2="' + (H - m.b) + '"/>';
+        s += '<text x="' + X(vv) + '" y="' + (H - m.b + 18) + '" text-anchor="middle">' + (vv > 0 ? "+" : vv < 0 ? "−" : "") + nf(Math.abs(vv), 1) + "</text>";
+      }
+      s += '<line class="zero" x1="' + X(0) + '" x2="' + X(0) + '" y1="' + m.t + '" y2="' + (H - m.b) + '"/>';
+      rows.forEach(function (r, i) {
+        var y0 = m.t + i * rowH;
+        s += '<text class="rowlabel" x="' + m.l + '" y="' + (y0 + 16) + '">' + r.name + "</text>";
+        [["arg", r.a, 24], ["res", r.r, 46]].forEach(function (b) {
+          var v = b[1], x1 = X(Math.min(0, v)), w = Math.max(2, Math.abs(X(v) - X(0)));
+          s += '<rect class="bar ' + b[0] + '" data-row="' + i + '" data-g="' + b[0] + '" x="' + x1 + '" y="' + (y0 + b[2]) + '" width="' + w + '" height="17" rx="2"/>';
+          var tx = v >= 0 ? X(v) + 7 : X(v) - 7;
+          s += '<text class="val ' + b[0] + '" x="' + tx + '" y="' + (y0 + b[2] + 13) + '" text-anchor="' + (v >= 0 ? "start" : "end") + '">' + sg(v) + "</text>";
+        });
+      });
+      plot.innerHTML = s + "</svg>";
+    }
+    plot.addEventListener("pointermove", function (e) {
+      var t = e.target;
+      if (!t.getAttribute || !t.getAttribute("data-row")) { tip.hide(); return; }
+      var r = rows[+t.getAttribute("data-row")], gk = t.getAttribute("data-g");
+      var val = gk === "arg" ? r.a : r.r, ends = gk === "arg" ? r.ea : r.er;
+      var html = "<b>" + r.name + "</b>" + row(gk, gk === "arg" ? "Argentina" : "Resto", sg(val), ends ? nf(ends[0]) + " (1920) → " + nf(ends[1]) + " (2010)" : "Cambio entre 1920 y 2010");
+      tip.show(html, relX(plot, e), relY(plot, e));
+    });
+    plot.addEventListener("pointerleave", function () { tip.hide(); });
+    draw(); watch(host, draw);
+  })();
+
+  /* ---------- Figura 3: mapa de ánimo ---------- */
+  (function () {
+    var host = document.getElementById("chM"), plot = host.querySelector(".plot"), tip = makeTip(host);
+    var range = document.getElementById("decRange"), out = document.getElementById("decOut");
+    var xmin = 0.4, xmax = 0.8, ymin = 0.15, ymax = 0.8, upto = N - 1, pts = [], geo = null;
+    function draw() {
+      var W = Math.max(260, host.clientWidth), H = Math.round(Math.min(isPresent() ? Math.max(320, window.innerHeight * 0.5) : 520, Math.max(300, W * 0.72)));
+      var m = { t: 12, r: 14, b: 44, l: 44 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+      var X = function (v) { return m.l + iw * (v - xmin) / (xmax - xmin); };
+      var Y = function (v) { return m.t + ih * (1 - (v - ymin) / (ymax - ymin)); };
+      var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Trayectoria de energía y valencia por década para Argentina y Resto, con cuadrantes cortados en 0,5">';
+      /* cuadrante alegre y enérgica */
+      s += '<rect class="quadfill" x="' + X(0.5) + '" y="' + Y(ymax) + '" width="' + (X(xmax) - X(0.5)) + '" height="' + (Y(0.5) - Y(ymax)) + '"/>';
+      for (var v = 0.4; v <= 0.801; v += 0.1) {
+        var vx = Math.round(v * 10) / 10;
+        s += '<line class="grid" x1="' + X(vx) + '" x2="' + X(vx) + '" y1="' + m.t + '" y2="' + (H - m.b) + '"/>';
+        s += '<text x="' + X(vx) + '" y="' + (H - m.b + 18) + '" text-anchor="middle">' + nf(vx, 1) + "</text>";
+      }
+      for (var u = 0.2; u <= 0.801; u += 0.1) {
+        var uy = Math.round(u * 10) / 10;
+        s += '<line class="grid" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(uy) + '" y2="' + Y(uy) + '"/>';
+        s += '<text x="' + (m.l - 8) + '" y="' + (Y(uy) + 4) + '" text-anchor="end">' + nf(uy, 1) + "</text>";
+      }
+      s += '<line class="refline" x1="' + X(0.5) + '" x2="' + X(0.5) + '" y1="' + m.t + '" y2="' + (H - m.b) + '"/>';
+      s += '<line class="refline" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(0.5) + '" y2="' + Y(0.5) + '"/>';
+      s += '<text class="quad" x="' + (X(xmax) - 8) + '" y="' + (Y(ymax) + 18) + '" text-anchor="end">Alegre y enérgica</text>';
+      s += '<text class="quad" x="' + (X(xmin) + 8) + '" y="' + (Y(ymax) + 18) + '">Tensa</text>';
+      s += '<text class="quad" x="' + (X(xmin) + 8) + '" y="' + (Y(ymin) - 8) + '">Triste</text>';
+      s += '<text class="quad" x="' + (X(xmax) - 8) + '" y="' + (Y(ymin) - 8) + '" text-anchor="end">Tranquila</text>';
+      s += '<text class="axtitle" x="' + (m.l + iw / 2) + '" y="' + (H - 4) + '" text-anchor="middle">Valencia (0 = triste, 1 = alegre)</text>';
+      s += '<text class="axtitle" transform="translate(12 ' + (m.t + ih / 2) + ') rotate(-90)" text-anchor="middle">Energía</text>';
+
+      pts = [];
+      [["arg", "eA", "vA", "Argentina"], ["res", "eR", "vR", "Resto"]].forEach(function (se) {
+        var dstr = "", pen = false, lastShown = -1, firstShown = -1;
+        for (var i = 0; i <= upto; i++) {
+          var e = D[i][se[1]], vv = D[i][se[2]];
+          if (e == null) {
+            var j = i + 1;
+            if (j <= upto && D[j][se[1]] != null && i > 0) { /* tramo punteado */
+              s += '<path class="gap ' + se[0] + '" d="M' + X(D[i - 1][se[2]]) + " " + Y(D[i - 1][se[1]]) + "L" + X(D[j][se[2]]) + " " + Y(D[j][se[1]]) + '"/>';
+            }
+            pen = false; continue;
+          }
+          dstr += (pen ? "L" : "M") + X(vv).toFixed(1) + " " + Y(e).toFixed(1); pen = true;
+          if (firstShown < 0) firstShown = i; lastShown = i;
+        }
+        s += '<path class="ln ' + se[0] + '" d="' + dstr + '"/>';
+        for (var k = 0; k <= upto; k++) {
+          var ee = D[k][se[1]], vk = D[k][se[2]];
+          if (ee == null) continue;
+          var isEnd = (k === firstShown || k === lastShown);
+          s += '<circle class="dot ' + se[0] + '" cx="' + X(vk) + '" cy="' + Y(ee) + '" r="' + (isEnd ? 5.5 : 3.5) + '"/>';
+          pts.push({ x: X(vk), y: Y(ee), i: k, cls: se[0], name: se[3], e: ee, v: vk });
+        }
+        [firstShown, lastShown].forEach(function (k, n) {
+          if (k < 0 || (n === 1 && k === firstShown)) return;
+          var px = X(D[k][se[2]]), py = Y(D[k][se[1]]);
+          var right = px < X(0.68);
+          s += '<text class="plbl ' + se[0] + '" x="' + (px + (right ? 9 : -9)) + '" y="' + (py - 8) + '" text-anchor="' + (right ? "start" : "end") + '">' + D[k].d + "s</text>";
+        });
+      });
+      s += "</svg>";
+      plot.innerHTML = s; geo = { W: W, H: H };
+    }
+    plot.addEventListener("pointermove", function (e) {
+      var x = relX(plot, e), y = relY(plot, e), best = null, bd = 18 * 18;
+      pts.forEach(function (p) { var d = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y); if (d < bd) { bd = d; best = p; } });
+      if (!best) { tip.hide(); return; }
+      var html = "<b>" + best.name + " · años " + D[best.i].d + "</b>" + row(best.cls, "Energía", nf(best.e)) + row(best.cls, "Valencia", nf(best.v)) +
+        '<div class="s">' + ni(best.cls === "arg" ? D[best.i].nA : D[best.i].nR) + " canciones</div>";
+      tip.show(html, best.x, best.y);
+    });
+    plot.addEventListener("pointerleave", function () { tip.hide(); });
+    range.addEventListener("input", function () {
+      upto = +range.value; out.textContent = D[upto].d; draw();
+    });
+    draw(); watch(host, draw);
+  })();
+  /* ---------- Modo presentación ---------- */
+  (function () {
+    var root = document.documentElement;
+    var els = [].slice.call(document.querySelectorAll("[data-slide]"));
+    var secs = [].slice.call(document.querySelectorAll("main > section"));
+    var total = Math.max.apply(null, els.map(function (e) { return +e.getAttribute("data-slide"); }));
+    var on = false, idx = 0, savedY = 0;
+    var $ = function (id) { return document.getElementById(id); };
+    var counter = $("pCount"), prog = $("pProg");
+
+    function redraw() { requestAnimationFrame(function () { window.dispatchEvent(new Event("tp-redraw")); }); }
+
+    function show(n, revealAll) {
+      idx = Math.max(0, Math.min(total - 1, n));
+      els.forEach(function (e) { e.classList.remove("on"); });
+      [].forEach.call(document.querySelectorAll(".unrevealed"), function (e) { e.classList.remove("unrevealed"); });
+      var cur = els.filter(function (e) { return +e.getAttribute("data-slide") === idx + 1; });
+      cur.forEach(function (e) {
+        e.classList.add("on");
+        if (!revealAll) [].forEach.call(e.querySelectorAll("[data-reveal]"), function (r) { r.classList.add("unrevealed"); });
+      });
+      secs.forEach(function (s) { s.classList.toggle("active", !!s.querySelector(".on")); s.scrollTop = 0; });
+      counter.textContent = (idx + 1) + " / " + total;
+      prog.style.width = ((idx + 1) / total * 100) + "%";
+      redraw();
+    }
+    function next() {
+      var u = document.querySelector(".unrevealed");
+      if (u) {
+        u.classList.remove("unrevealed"); redraw();
+        try { u.scrollIntoView({ behavior: "smooth", block: "end" }); } catch (e) {}
+        return;
+      }
+      if (idx < total - 1) show(idx + 1, false);
+    }
+    function prev() { if (idx > 0) show(idx - 1, true); }
+
+    function enter() {
+      if (on) return;
+      savedY = window.scrollY; on = true;
+      root.classList.add("present");
+      show(0, false);
+    }
+    function exit() {
+      if (!on) return;
+      on = false;
+      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+      root.classList.remove("present");
+      els.forEach(function (e) { e.classList.remove("on"); });
+      secs.forEach(function (s) { s.classList.remove("active"); });
+      [].forEach.call(document.querySelectorAll(".unrevealed"), function (e) { e.classList.remove("unrevealed"); });
+      window.scrollTo({ top: savedY, behavior: "instant" });
+      redraw();
+    }
+    function fullscreen() {
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (root.requestFullscreen) root.requestFullscreen().catch(function () {});
+      } catch (e) {}
+    }
+
+    $("presentBtn").addEventListener("click", enter);
+    $("pExit").addEventListener("click", exit);
+    $("pNext").addEventListener("click", next);
+    $("pPrev").addEventListener("click", prev);
+    $("pFull").addEventListener("click", fullscreen);
+
+    document.addEventListener("keydown", function (e) {
+      if (!on || e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target, tag = t && t.tagName;
+      var inRange = tag === "INPUT" && t.type === "range";
+      var k = e.key;
+      if ((k === "ArrowRight" || k === "ArrowLeft") && inRange) return;
+      if ((k === " " || k === "Enter") && (tag === "BUTTON" || tag === "SUMMARY" || tag === "A" || inRange)) return;
+      if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Enter") { e.preventDefault(); next(); }
+      else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); prev(); }
+      else if (k === "Home") { e.preventDefault(); show(0, true); }
+      else if (k === "End") { e.preventDefault(); show(total - 1, true); }
+      else if (k === "Escape") { exit(); }
+      else if (k === "f" || k === "F") { fullscreen(); }
+    });
+
+    var sx = 0, sy = 0;
+    document.querySelector("main").addEventListener("touchstart", function (e) {
+      if (!on) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    }, { passive: true });
+    document.querySelector("main").addEventListener("touchend", function (e) {
+      if (!on) return;
+      var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { dx < 0 ? next() : prev(); }
+    }, { passive: true });
+
+    /* #presentacion en la URL abre directamente el modo presentación */
+    if (location.hash === "#presentacion") enter();
+  })();
+})();
+</script>
+</body>
+</html>
