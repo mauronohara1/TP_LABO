@@ -33,9 +33,9 @@ Usamos la columna `genres` de `artists.csv`, que contiene etiquetas de géneros 
 
 | Archivo | Descripción |
 | --- | --- |
-| `exploracion_y_analisis_spotify.ipynb` | Notebook principal: exploración y preparación de los datos, resúmenes estadísticos y gráficos. |
+| `02_exploracion_y_analisis_spotify_version2.ipynb` | Notebook principal: exploración y preparación de los datos, resúmenes estadísticos y gráficos. |
 | `Informe_académico___Trabajo_grupal_laboratorio.pdf` | Informe académico. |
-| `https://mauronohara1.github.io/TP_LABO/` | Presentación. |
+| `PresentacionPP.pptx` | Presentación. |
 
 El dataset no está incluido en el repositorio por su tamaño. El notebook intenta descargarlo desde Kaggle mediante `kagglehub`; también se pueden descargar los archivos desde la página del dataset.
 
