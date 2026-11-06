@@ -282,7 +282,7 @@ details.data th, details.data td { padding: 8px 12px; }
 .verdict p { font-size: 0.93rem; color: var(--muted); }
 .verdict .mono { color: var(--fg); }
 @media (max-width: 860px) { .verdicts { grid-template-columns: minmax(0, 1fr); } }
-.limits { margin-top: 40px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 4vw, 48px); }
+.limits { margin-top: 40px; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(20px, 4vw, 48px); }
 .limits h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; }
 .limits ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); font-size: 0.97rem; }
 .limits ul li::marker { color: var(--accent); }
@@ -512,7 +512,7 @@ html.present .pctl {
       <div class="fig-head">
         <div class="eyebrow">Figura 1</div>
         <h3>Evolución de la energía y la valencia por década</h3>
-        <p class="how">Dos paneles con la misma escala (0,2 a 0,8). Cada línea es el promedio de una década para un grupo. Las décadas con menos de 100 canciones quedan fuera de la comparación.</p>
+        <p class="how">Dos paneles con la misma escala (0,2 a 0,8). Cada línea es el promedio de una década para un grupo. Solo se grafican las décadas con al menos 50 canciones por grupo.</p>
       </div>
       <div class="legend"><span><i class="arg"></i>Argentina</span><span><i class="res"></i>Resto</span></div>
       <div class="panels">
@@ -525,7 +525,7 @@ html.present .pctl {
           <h4>Interpretación</h4>
           <p>La energía argentina empieza a subir entre los años 20 y 30. En el resto baja hasta los 40 y luego crece. En ambos grupos la tendencia ascendente se marca desde los 60 y 70. En los 70 el resto supera a Argentina, pero desde los 80 la media argentina vuelve a quedar por encima.</p>
           <p>La valencia no baja de manera continua. En Argentina sube en los 30, cae hasta los 70 y se recupera después, con una leve baja en los 2010. En el resto baja hasta los 50, sube hasta los 70 y luego desciende. Aun así, en 2010 es menor que en 1920 en ambos grupos.</p>
-          <p class="muted">El promedio argentino de los años 50 no aparece: sus 96 canciones no alcanzan el mínimo de 100.</p>
+          <p class="muted">El promedio argentino de los años 50 se basa en solo 96 canciones: es la década de menor muestra, así que conviene leerlo con cautela.</p>
         </div>
         <div class="keyn">
           <div><span>Energía, Argentina</span><span>0,227 → 0,703</span></div>
@@ -568,7 +568,7 @@ html.present .pctl {
         <h3>Mapa de ánimo: energía contra valencia</h3>
         <p class="how">Cada punto es el promedio de una década y la línea muestra el recorrido en el tiempo. Los cuadrantes usan un corte en 0,5 y son una guía visual, no categorías establecidas para todas las canciones. Mové el control para recorrer las décadas.</p>
       </div>
-      <div class="legend"><span><i class="arg"></i>Argentina</span><span><i class="res"></i>Resto</span><span class="muted">Línea punteada: década sin dato suficiente</span></div>
+      <div class="legend"><span><i class="arg"></i>Argentina</span><span><i class="res"></i>Resto</span></div>
       <div class="chart" id="chM"><div class="plot"></div></div>
       <div class="slider">
         <label for="decRange">Mostrar hasta la década de</label>
@@ -629,15 +629,6 @@ html.present .pctl {
           <li>La comparación llega hasta la década de 2010 y la cantidad de canciones varía mucho entre décadas.</li>
         </ul>
       </div>
-      <div>
-        <h3>Próximos pasos</h3>
-        <ul>
-          <li>Analizar cada género argentino por separado y comparar tendencias dentro de cada uno.</li>
-          <li>Incorporar una fuente más completa para identificar artistas argentinos.</li>
-          <li>Estudiar los cambios año por año, no solo por década.</li>
-          <li>Comprobar si los resultados se mantienen con otros métodos de resumen, además del promedio.</li>
-        </ul>
-      </div>
     </div>
 
     <p class="note" data-slide="10"><b>Reflexión metodológica.</b> Se usaron Claude y ChatGPT para explorar el dataset, revisar el código, proponer interpretaciones y redactar algunas secciones. Cada sugerencia se contrastó con las columnas, las salidas y los gráficos del notebook. El grupo concluyó que la IA agiliza la exploración y la redacción, pero sus propuestas necesitan revisión humana y pueden no ajustarse a los datos disponibles.</p>
@@ -677,7 +668,7 @@ html.present .pctl {
     { d: 1920, nA: 1344, nR: 3591,  eA: 0.227, eR: 0.334, vA: 0.702, vR: 0.588, eT: 0.305, vT: 0.619 },
     { d: 1930, nA: 983,  nR: 9202,  eA: 0.308, eR: 0.316, vA: 0.759, vR: 0.554, eT: 0.315, vT: 0.573 },
     { d: 1940, nA: 279,  nR: 14940, eA: 0.327, eR: 0.272, vA: 0.705, vR: 0.495, eT: 0.273, vT: 0.499 },
-    { d: 1950, nA: 96,   nR: 30622, eA: null,  eR: 0.301, vA: null,  vR: 0.493, eT: 0.302, vT: 0.493 },
+    { d: 1950, nA: 96,   nR: 30622, eA: 0.310, eR: 0.301, vA: 0.609,  vR: 0.493, eT: 0.302, vT: 0.493 },
     { d: 1960, nA: 602,  nR: 41494, eA: 0.423, eR: 0.406, vA: 0.556, vR: 0.564, eT: 0.406, vT: 0.564 },
     { d: 1970, nA: 1017, nR: 52788, eA: 0.427, eR: 0.504, vA: 0.489, vR: 0.584, eT: 0.502, vT: 0.583 },
     { d: 1980, nA: 1263, nR: 66912, eA: 0.586, eR: 0.560, vA: 0.573, vR: 0.582, eT: 0.561, vT: 0.582 },
@@ -785,11 +776,10 @@ html.present .pctl {
           if (v == null) { pen = false; return; }
           dstr += (pen ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); pen = true;
         });
-        /* tramo punteado donde falta el dato */
+        /* donde falta el dato (n < 50) no se dibuja nada: solo se marca la década */
         for (var i = 1; i < N - 1; i++) {
           if (D[i][se.key] == null && D[i - 1][se.key] != null && D[i + 1][se.key] != null) {
-            s += '<path class="gap ' + se.cls + '" d="M' + X(i - 1) + " " + Y(D[i - 1][se.key]) + "L" + X(i + 1) + " " + Y(D[i + 1][se.key]) + '"/>';
-            s += '<text class="nodata" x="' + X(i) + '" y="' + (H - m.b - 8) + '" text-anchor="middle">n &lt; 100</text>';
+            s += '<text class="nodata" x="' + X(i) + '" y="' + (H - m.b - 8) + '" text-anchor="middle">n &lt; 50</text>';
           }
         }
         s += '<path class="ln ' + se.cls + '" d="' + dstr + '"/>';
@@ -834,7 +824,7 @@ html.present .pctl {
       var r = D[i], html = "<b>Años " + r.d + "</b>";
       cfg.series.forEach(function (se) {
         var n = se.cls === "arg" ? r.nA : r.nR;
-        html += row(se.cls, se.name, nf(r[se.key]), ni(n) + " canciones" + (r[se.key] == null ? " (menos de 100)" : ""));
+        html += row(se.cls, se.name, nf(r[se.key]), ni(n) + " canciones" + (r[se.key] == null ? " (menos de 50)" : ""));
       });
       tip.show(html, relX(plot, e), relY(plot, e));
     });
@@ -944,10 +934,6 @@ html.present .pctl {
         for (var i = 0; i <= upto; i++) {
           var e = D[i][se[1]], vv = D[i][se[2]];
           if (e == null) {
-            var j = i + 1;
-            if (j <= upto && D[j][se[1]] != null && i > 0) { /* tramo punteado */
-              s += '<path class="gap ' + se[0] + '" d="M' + X(D[i - 1][se[2]]) + " " + Y(D[i - 1][se[1]]) + "L" + X(D[j][se[2]]) + " " + Y(D[j][se[1]]) + '"/>';
-            }
             pen = false; continue;
           }
           dstr += (pen ? "L" : "M") + X(vv).toFixed(1) + " " + Y(e).toFixed(1); pen = true;
